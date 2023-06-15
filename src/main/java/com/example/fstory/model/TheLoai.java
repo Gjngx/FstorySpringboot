@@ -25,6 +25,11 @@ public class TheLoai {
         this.tieude = tieude;
     }
 
+    public TheLoai(String id) {
+        this.id = Long.valueOf(id);
+    }
+
+
     public Long getId() {
         return id;
     }
