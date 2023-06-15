@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 @Service
 public class ImageStorageService implements IStorageService{
     private final Path storageFolder = Paths.get("uploads");
-    //constructor
     public ImageStorageService() {
         try {
             Files.createDirectories(storageFolder);
@@ -29,7 +28,6 @@ public class ImageStorageService implements IStorageService{
         }
     }
     private boolean isImageFile(MultipartFile file) {
-        //Let install FileNameUtils
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
         return Arrays.asList(new String[] {"png","jpg","jpeg", "bmp"})
                 .contains(fileExtension.trim().toLowerCase());
@@ -37,20 +35,16 @@ public class ImageStorageService implements IStorageService{
     @Override
     public String storeFile(MultipartFile file) {
         try {
-            System.out.println("haha");
             if (file.isEmpty()) {
-                throw new RuntimeException("Failed to store empty file.");
+                throw new RuntimeException("Không có file nào");
             }
-            //check file is image ?
             if(!isImageFile(file)) {
-                throw new RuntimeException("You can only upload image file");
+                throw new RuntimeException("Chỉ có thể tải een file ảnh.");
             }
-            //file must be <= 5Mb
             float fileSizeInMegabytes = file.getSize() / 1_000_000.0f;
             if(fileSizeInMegabytes > 5.0f) {
-                throw new RuntimeException("File must be <= 5Mb");
+                throw new RuntimeException("kích cỡ file <= 5Mb");
             }
-            //File must be rename, why ?
             String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
             String generatedFileName = UUID.randomUUID().toString().replace("-", "");
             generatedFileName = generatedFileName+"."+fileExtension;
@@ -59,7 +53,7 @@ public class ImageStorageService implements IStorageService{
                     .normalize().toAbsolutePath();
             if (!destinationFilePath.getParent().equals(this.storageFolder.toAbsolutePath())) {
                 throw new RuntimeException(
-                        "Cannot store file outside current directory.");
+                        "Không thể lưu trữ tệp bên ngoài thư mục hiện tại");
             }
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
@@ -67,21 +61,19 @@ public class ImageStorageService implements IStorageService{
             return generatedFileName;
         }
         catch (IOException exception) {
-            throw new RuntimeException("Failed to store file.", exception);
+            throw new RuntimeException("Không thể lưu trữ tệp.", exception);
         }
     }
 
     @Override
     public Stream<Path> loadAll() {
         try {
-            //list all files in storageFolder
-            //How to fix this ?
             return Files.walk(this.storageFolder, 1)
                     .filter(path -> !path.equals(this.storageFolder) && !path.toString().contains("._"))
                     .map(this.storageFolder::relativize);
         }
         catch (IOException e) {
-            throw new RuntimeException("Failed to load stored files", e);
+            throw new RuntimeException("Không thể tải các tệp đã lưu trữ", e);
         }
 
     }
@@ -97,11 +89,11 @@ public class ImageStorageService implements IStorageService{
             }
             else {
                 throw new RuntimeException(
-                        "Could not read file: " + fileName);
+                        "Không thể xuất file: " + fileName);
             }
         }
         catch (IOException exception) {
-            throw new RuntimeException("Could not read file: " + fileName, exception);
+            throw new RuntimeException("Không thể xuất file: " + fileName, exception);
         }
     }
     @Override
